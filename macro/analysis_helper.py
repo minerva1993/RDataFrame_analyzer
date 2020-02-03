@@ -8,7 +8,16 @@ def get_file_list(rootDir, dataset):
   out = []
   tmp = os.listdir(os.path.join(rootDir, dataset))
   for i in tmp:
-    if not i.endswith('.root'): tmp.remove(i)
+    if not i.endswith('.root'): continue
+    if i.endswith('000.root'): continue 
+    if i.endswith('001.root'): continue 
+    if i.endswith('002.root'): continue 
+    if i.endswith('003.root'): continue 
+    if i.endswith('004.root'): continue 
+    if i.endswith('005.root'): continue 
+    if i.endswith('006.root'): continue 
+    if i.endswith('007.root'): continue 
+    if i.endswith('008.root'): continue 
     out.append(os.path.join(rootDir,dataset,i))
 
   return out

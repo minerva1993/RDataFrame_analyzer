@@ -53,7 +53,7 @@ for folder_to_process in list_to_process:
     else:                       jec_str = 'jet_pt * jet_JER_Nom'
 
     #Create output root file
-    out = TFile.Open( os.path.join(outDir, folder_to_process) + postfix + syst_ext + '.root', 'RECREATE' )
+    out = TFile.Open( os.path.join(outDir, 'hist_' + folder_to_process.replace('_','')) + postfix + syst_ext + '.root', 'RECREATE' )
 
     #Cut flow, lepton first
     lepton_dict = lepton_sel(options.year)
