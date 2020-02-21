@@ -14,7 +14,7 @@ options = parser.parse_args()
 
 process = psutil.Process(os.getpid())
 
-ROOT.ROOT.EnableImplicitMT(4)
+#ROOT.ROOT.EnableImplicitMT(4)
 gROOT.SetBatch()
 
 rootDir = {2017:'/data/users/minerva1993/ntuple/V9_6/200101/production',
@@ -29,7 +29,6 @@ syst2 = ['TuneCP5up','TuneCP5down','hdampup','hdampdown'] #external sample
 
 for folder_to_process in list_to_process:
   if folder_to_process != "TT_powheg_ttbb": continue
-  d = load_file( get_file_list(rootDir[options.year], folder_to_process), default_branch )
 
   #Deal with JER/C, Hdamp, Tune systematics
   loc_str = os.path.join(rootDir[options.year], folder_to_process)
@@ -52,23 +51,51 @@ for folder_to_process in list_to_process:
     elif syst_ext == 'jerdown': jec_str = 'jet_pt * jet_JER_Down'
     else:                       jec_str = 'jet_pt * jet_JER_Nom'
 
-    #Create output root file
+    hists = []
+    #Open dataframe and create output root file
+    d = load_file( get_file_list(rootDir[options.year], folder_to_process), default_branch )
     out = TFile.Open( os.path.join(outDir, 'hist_' + folder_to_process.replace('_','')) + postfix + syst_ext + '.root', 'RECREATE' )
+    print "Creating " + os.path.join(outDir, 'hist_' + folder_to_process.replace('_','')) + postfix + syst_ext + '.root'
 
     #Cut flow, lepton first
+    d = d.Define('lep_sel', '(channel == 0 && lepton_pt > 30 && abs(lepton_eta) <= 2.4) ||\
+                             (channel == 1 && lepton_pt > 30 && abs(lepton_eta) <= 2.4)').Filter('lep_sel > 0')
+
+    #Jec/jer
+    d = d.Define('jet_pt_jerc', jec_str)
+    #tmp = ROOT.vector("string")()
+    #tmp.push_back('jet_pt_jerc')
+    #pp = d.Display(tmp)
+    #pp.Print()
+
+    d = d.Define('njet_jerc', 'Sum(jet_pt_jerc > 30 && abs(jet_eta) < 2.4)')\
+         .Define('nbjet_jerc', 'Sum(jet_pt_jerc > 30 && abs(jet_eta) < 2.4 && jet_deepCSV > ' + b_tagging(options.year) + ')')
+
+    #Run on step0 first
     lepton_dict = lepton_sel(options.year)
     for l_key, l_value in lepton_dict.items():
+      hist_dict = histos(l_key, 0, syst_ext)
 
-      #Be careful of the working point!
-      cut_dict = cut_flow(b_tagging(options.year))
-      #print(d)
+      for h_key, h_value in hist_dict.items():
+        h = d.Filter(l_value).Histo1D(h_value, h_key)
+        hists.append(h)
 
-      for c_key, c_value in cut_dict.items():
-        hist_dict = histos(l_key, c_key, '')
+    #Baseline jet selection to shorten time
+    d = d.Filter('njet_jerc >= 3 && nbjet_jerc >= 2')
+
+    cut_dict = cut_flow(b_tagging(options.year))
+    for c_key, c_value in cut_dict.items():
+
+      lepton_dict = lepton_sel(options.year)
+      for l_key, l_value in lepton_dict.items():
+        hist_dict = histos(l_key, c_key, syst_ext)
 
         for h_key, h_value in hist_dict.items():
-          h = d.Define('jet_pt_jerc', jec_str).Filter(l_value + c_value, c_key).Histo1D(h_value, h_key)
-          h.Write()
+          h = d.Filter(l_value + c_value, c_key).Histo1D(h_value, h_key)
+          hists.append(h)
+
+    for hist in hists:
+      hist.Write()
 
     out.Close()
 
