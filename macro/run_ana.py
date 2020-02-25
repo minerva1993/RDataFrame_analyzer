@@ -126,6 +126,8 @@ def run_ana(tuple_args):
 
       if '__mu' in syst_name and l_key == '1': wgt_str = 'EventWeight'
       if '__el' in syst_name and l_key == '0': wgt_str = 'EventWeight'
+      if not any(s in folder_to_process for s in ['TTpowheg','TTLL','TTHad']):
+        if any(t in syst_name for t in ['__scale','__ps','__pdf']): continue 
 
       hist_dict = histos(l_key, 0, postfix + syst_key_list()[s_idx])
       for h_key, h_value in hist_dict.items():
@@ -150,6 +152,8 @@ def run_ana(tuple_args):
 
         if '__mu' in syst_name and l_key == '1': wgt_str = 'EventWeight'
         if '__el' in syst_name and l_key == '0': wgt_str = 'EventWeight'
+        if not any(s in folder_to_process for s in ['TTpowheg','TTLL','TTHad']):    
+          if any(t in syst_name for t in ['__scale','__ps','__pdf']): continue  
 
         hist_dict = histos(l_key, c_key, postfix + syst_key_list()[s_idx])
         for h_key, h_value in hist_dict.items():
