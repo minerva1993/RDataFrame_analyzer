@@ -1,8 +1,7 @@
 import collections
 
-def cut_flow(bdiscr):
+def cut_flow():
 
-  b_discr = str(bdiscr)
   d = collections.OrderedDict()
   d['1'] = ' && njet_jerc == 3'
   d['2'] = ' && njet_jerc == 3 && nbjet_jerc == 2'
