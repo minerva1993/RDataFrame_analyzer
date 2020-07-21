@@ -56,6 +56,7 @@ def run_ana(tuple_args):
   #JER/C treatment
   jerc_str = ''; met_pt_str = 'fabs(MET)'; met_phi_str = 'MET_phi'
   if syst_ext == 'jecup':
+    jerc_str = ' * jet_JER_Nom * jet_JES_Up'
     met_pt_str  = 'MET_unc_x[0]*MET_unc_x[0] + MET_unc_y[0]*MET_unc_y[0]'
     met_phi_str = 'TMath::ATan(MET_unc_x[0]/MET_unc_y[0])'
   elif syst_ext == 'jecdown':
